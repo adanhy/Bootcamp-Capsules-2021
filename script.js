@@ -1,7 +1,7 @@
 const bootcampURL = `https://apple-seeds.herokuapp.com/api/users/`;
 
 var students = [];
-var displayed = [];
+var displayed_info = [];
 
 function AddLine(lineObj) {
   //   console.log(lineObj);
@@ -46,13 +46,41 @@ function AddHeadLine(lineObj) {
   thead.appendChild(row);
 }
 
+function addSelections(lineObj) {
+  if (!lineObj) return;
+  const selection = document.querySelector(`#fields`);
+  selection.innerHTML = ``;
+  Object.keys(lineObj).forEach(async (v) => {
+    const option = document.createElement(`option`);
+    option.textContent = v;
+    option.value = v;
+    selection.appendChild(option);
+  });
+}
+
+function SetSearch() {
+  const srchbtn = document.querySelector(`#srchbtn`);
+  srchbtn.addEventListener(`click`, () => {
+    const fld = document.querySelector(`#fields`).value;
+    const val = document.querySelector(`#srchval`).value;
+    refresh(searchFieldByValue(fld, val));
+  });
+
+  const resetbtn = document.querySelector(`#resetbtn`);
+  resetbtn.addEventListener(`click`, () => {
+    refresh(students);
+  });
+}
+
 function refresh(arr) {
+  if (!arr) return;
   document.querySelector(`#table-data`).innerHTML = ``;
   AddHeadLine(arr[0]);
+  SetSearch();
   arr.forEach(async (a) => {
     AddLine(a);
   });
-  setDeleteButtons();
+  setDeleteButtons(arr);
   setEditButtons();
   setWeatherHover();
 }
@@ -95,18 +123,42 @@ async function fetchData() {
       hobby: info.hobby,
     });
   }
+  addSelections(students[0]);
+
   refresh(students);
-  //   localStorage.setItem(`students`, JSON.stringify(students));
 }
 
-function setDeleteButtons() {
+function searchFieldByValue(field, val) {
+  return students.reduce((acc, e) => {
+    if (e[field] == val) {
+      return [...acc, e];
+    }
+    return acc;
+  }, []);
+}
+
+function sortDataByKey(key, arr) {
+  return arr.sort((a, b) => {
+    if (a[key] > b[key]) return 1;
+    if (a[key] < b[key]) return -1;
+    else return 0;
+  });
+}
+
+function setDeleteButtons(arr) {
   console.log(`setting delete btns`);
   const delbuttons = document.querySelectorAll(`.deletebtn`);
   delbuttons.forEach((btn) => {
     btn.addEventListener(`click`, (e) => {
       const clicked_id = e.target.closest(`tr`).getAttribute(`dataid`);
       DeleteStudentById(clicked_id);
-      refresh(students);
+      arr.forEach((obj, i) => {
+        if (obj.id == clicked_id) {
+          arr.splice(i, 1);
+        }
+      });
+      //   arr.splice(clicked_id, 1);
+      refresh(arr);
     });
   });
 }
@@ -224,12 +276,12 @@ function setWeatherHover() {
       );
 
       const cityTemp = await cityResp.json();
-      console.log(e.target.querySelector(`span`));
+      //   console.log(e.target.querySelector(`span`));
 
       e.target.querySelector(`span`).textContent =
         Math.floor(cityTemp.main.temp - 273.15) || `no data`;
 
-      console.log(e.target.querySelector(`span`).textContent);
+      //   console.log(e.target.querySelector(`span`).textContent);
     });
   });
 }
