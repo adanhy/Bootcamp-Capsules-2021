@@ -33,17 +33,25 @@ function AddLine(lineObj) {
   thead.appendChild(row);
 }
 
-function AddHeadLine(lineObj) {
-  const thead = document.querySelector(`#thead`);
-  thead.innerHTML = ``;
-  const row = document.createElement(`tr`);
-  const headers = lineObj;
-  Object.keys(headers).forEach(async (v) => {
-    const th = document.createElement(`th`);
-    th.textContent = v;
-    row.appendChild(th);
-  });
-  thead.appendChild(row);
+function AddHeadLine(lineObj, arr) {
+  //   if (!lineObj) return;
+  try {
+    const thead = document.querySelector(`#thead`);
+    thead.innerHTML = ``;
+    const row = document.createElement(`tr`);
+    const headers = lineObj;
+    Object.keys(headers).forEach(async (v) => {
+      const th = document.createElement(`th`);
+      th.textContent = v;
+      th.addEventListener(`click`, (e) => {
+        refresh(sortDataByKey(th.textContent, arr));
+      });
+      row.appendChild(th);
+    });
+    thead.appendChild(row);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function addSelections(lineObj) {
@@ -58,7 +66,7 @@ function addSelections(lineObj) {
   });
 }
 
-function SetSearch() {
+async function SetSearch() {
   const srchbtn = document.querySelector(`#srchbtn`);
   srchbtn.addEventListener(`click`, () => {
     const fld = document.querySelector(`#fields`).value;
@@ -70,12 +78,24 @@ function SetSearch() {
   resetbtn.addEventListener(`click`, () => {
     refresh(students);
   });
+
+  const txt = document.querySelector(`#srchval`);
+  txt.addEventListener(`keyup`, (event) => {
+    const fld = document.querySelector(`#fields`).value;
+    const val = document.querySelector(`#srchval`).value;
+    refresh(searchFieldByValue(fld, val));
+  });
+
+  //   const refetch = document.querySelector(``);
 }
 
 function refresh(arr) {
+  const spinner = document.querySelector(`.lds-ripple`);
+  spinner.style.display = `flex`;
+
   if (!arr) return;
   document.querySelector(`#table-data`).innerHTML = ``;
-  AddHeadLine(arr[0]);
+  AddHeadLine(arr[0], arr);
   SetSearch();
   arr.forEach(async (a) => {
     AddLine(a);
@@ -83,6 +103,7 @@ function refresh(arr) {
   setDeleteButtons(arr);
   setEditButtons();
   setWeatherHover();
+  spinner.style.display = `none`;
 }
 
 async function fetchData() {
@@ -98,34 +119,38 @@ async function fetchData() {
   //     refresh(students);
   //     return false;
   //   }
+
   console.log(`first time here?`);
+  try {
+    const AllResp = await fetch(bootcampURL);
+    const AllProm = await AllResp.json();
 
-  const AllResp = await fetch(bootcampURL);
-  const AllProm = await AllResp.json();
+    for (const i in AllProm) {
+      const idd = AllProm[i].id;
+      const infoResp = await fetch(bootcampURL + idd);
+      const info = await infoResp.json();
+      AllProm[i].age = info.age;
+      AllProm[i].city = info.city;
+      AllProm[i].gender = info.gender;
+      AllProm[i].hobby = info.hobby;
 
-  for (const i in AllProm) {
-    const idd = AllProm[i].id;
-    const infoResp = await fetch(bootcampURL + idd);
-    const info = await infoResp.json();
-    AllProm[i].age = info.age;
-    AllProm[i].city = info.city;
-    AllProm[i].gender = info.gender;
-    AllProm[i].hobby = info.hobby;
+      students.push({
+        id: AllProm[i].id,
+        firstName: AllProm[i].firstName,
+        lastName: AllProm[i].lastName,
+        capsule: AllProm[i].capsule,
+        age: info.age,
+        city: info.city,
+        gender: info.gender,
+        hobby: info.hobby,
+      });
+    }
+    addSelections(students[0]);
 
-    students.push({
-      id: AllProm[i].id,
-      firstName: AllProm[i].firstName,
-      lastName: AllProm[i].lastName,
-      capsule: AllProm[i].capsule,
-      age: info.age,
-      city: info.city,
-      gender: info.gender,
-      hobby: info.hobby,
-    });
+    refresh(students);
+  } catch (error) {
+    console.log(error);
   }
-  addSelections(students[0]);
-
-  refresh(students);
 }
 
 function searchFieldByValue(field, val) {
@@ -146,7 +171,6 @@ function sortDataByKey(key, arr) {
 }
 
 function setDeleteButtons(arr) {
-  console.log(`setting delete btns`);
   const delbuttons = document.querySelectorAll(`.deletebtn`);
   delbuttons.forEach((btn) => {
     btn.addEventListener(`click`, (e) => {
@@ -157,7 +181,6 @@ function setDeleteButtons(arr) {
           arr.splice(i, 1);
         }
       });
-      //   arr.splice(clicked_id, 1);
       refresh(arr);
     });
   });
@@ -235,7 +258,6 @@ function FromTextToInput(element, indx) {
 }
 
 function setEditButtons() {
-  console.log(`setting edit btns`);
   const editbuttons = document.querySelectorAll(`.editbtn`);
 
   editbuttons.forEach((btn) => {
@@ -267,23 +289,22 @@ function setEditButtons() {
 }
 
 function setWeatherHover() {
-  const items = document.querySelectorAll(`.weatherHover`);
+  try {
+    const items = document.querySelectorAll(`.weatherHover`);
 
-  items.forEach((v) => {
-    v.addEventListener(`mouseover`, async (e) => {
-      const cityResp = await fetch(
-        `https://api.codetabs.com/v1/proxy?quest=api.openweathermap.org/data/2.5/weather?q=${e.target.textContent}&appid=1098b0af8c3d64f1a9559d9696537cd4`
-      );
-
-      const cityTemp = await cityResp.json();
-      //   console.log(e.target.querySelector(`span`));
-
-      e.target.querySelector(`span`).textContent =
-        Math.floor(cityTemp.main.temp - 273.15) || `no data`;
-
-      //   console.log(e.target.querySelector(`span`).textContent);
+    items.forEach((v) => {
+      v.addEventListener(`mouseover`, async (e) => {
+        const cityResp = await fetch(
+          `https://api.codetabs.com/v1/proxy?quest=api.openweathermap.org/data/2.5/weather?q=${e.target.textContent}&appid=1098b0af8c3d64f1a9559d9696537cd4`
+        );
+        const cityTemp = await cityResp.json();
+        e.target.querySelector(`span`).textContent =
+          `temp: ` + Math.floor(cityTemp.main.temp - 273.15) + `c`;
+      });
     });
-  });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 fetchData();

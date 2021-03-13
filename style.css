@@ -2,11 +2,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  animation: pop 0.2s ease-in-out;
 }
 
 .table {
+  max-width: 70rem;
   border-collapse: collapse;
-  margin: 2rem 0;
+  margin: 0 0;
   font-size: 0.9em;
   font-family: sans-serif;
   min-width: 20rem;
@@ -23,6 +25,15 @@
 .table td {
   padding: 1rem 2rem;
   text-align: center;
+}
+
+thead :hover {
+  text-decoration: underline overline;
+  color: rgb(218, 81, 28);
+}
+
+thead {
+  text-decoration: underline;
 }
 
 .table tbody tr {
@@ -68,7 +79,7 @@ button {
 }
 
 .deletebtn {
-  background-color: red;
+  background-color: rgb(218, 81, 28);
   color: white;
 }
 
@@ -77,7 +88,7 @@ button {
   background: #c8c8c8;
   margin-left: 0;
   text-align: center;
-  padding: 1rem;
+  /* padding: 1rem; */
   position: absolute;
   z-index: 1000;
   width: 5rem;
@@ -98,9 +109,20 @@ button {
 .weatherHover:hover .tooltip {
   display: block;
   opacity: 1;
+  animation: pop 0.2s ease-in-out;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 #searchbox {
+  font-size: 0.8rem;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -126,4 +148,45 @@ button {
 button:hover {
   box-shadow: 0.1rem 0.1rem black;
   color: black;
+}
+
+.lds-ripple {
+  background-color: white;
+  position: fixed;
+  display: flex;
+  z-index: 81;
+  display: inline-block;
+  position: relative;
+  width: 10rem;
+  height: 10rem;
+}
+.lds-ripple div {
+  position: absolute;
+  border: 4px solid #009879;
+  opacity: 1;
+  border-radius: 50%;
+  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.lds-ripple div:nth-child(2) {
+  animation-delay: -0.5s;
+}
+@keyframes lds-ripple {
+  0% {
+    top: 36px;
+    left: 36px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: 0px;
+    left: 0px;
+    width: 72px;
+    height: 72px;
+    opacity: 0;
+  }
+}
+
+#refetch {
+  width: 5rem;
 }
