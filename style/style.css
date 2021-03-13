@@ -6,7 +6,7 @@
 
 .table {
   border-collapse: collapse;
-  margin: 5rem 0;
+  margin: 2rem 0;
   font-size: 0.9em;
   font-family: sans-serif;
   min-width: 20rem;
@@ -98,4 +98,32 @@ button {
 .weatherHover:hover .tooltip {
   display: block;
   opacity: 1;
+}
+
+#searchbox {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  border: 1px solid white;
+  background-color: #009879;
+  width: 80%;
+  margin: 2rem;
+}
+#searchbox > * {
+  justify-content: center;
+  justify-self: center;
+  height: 1.5rem;
+  margin: 0.5rem;
+  padding: 0.1rem;
+}
+
+#searchbox > input {
+  width: 10rem;
+}
+
+button:hover {
+  box-shadow: 0.1rem 0.1rem black;
+  color: black;
 }
